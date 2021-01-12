@@ -2,6 +2,7 @@ package com.demo.weatherapp
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.demo.weatherapp.feature.weather.WeatherFragment
 
 class WeatherAppActivity : AppCompatActivity() {
     
