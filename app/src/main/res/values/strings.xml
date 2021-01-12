@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">WeatherApp</string>
+
+    <string name="current_condition">Current Condition :</string>
+    <string name="temperature">Temperature :</string>
+    <string name="wind_speed">Wind Speed :</string>
+    <string name="wind_direction">Wind Direction :</string>
+
+    <string name="example_current_condition">Windy</string>
+    <string name="example_temperature">1&#xb0;C</string>
+    <string name="example_wind_speed">20mph</string>
+    <string name="example_wind_direction">North East</string>
+    <string name="current_condition_image">Current Condition Image</string>
 </resources>
