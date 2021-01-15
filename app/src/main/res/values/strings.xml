@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">WeatherApp</string>
 
+    <string name="openweathermap_api_key">f45f1176cabb468b3b078caeb8ef955c</string>
+    <string name="default_city">Belfast</string>
+
     <string name="current_condition">Current Condition :</string>
     <string name="temperature">Temperature :</string>
     <string name="wind_speed">Wind Speed :</string>
@@ -22,4 +25,7 @@
     <string name="refresh_button">Refresh Button</string>
 
     <string name="last_updated">"Last updated: %1$s"</string>
+
+    <string name="weather_icon_url">""https://openweathermap.org/img/w/%1$s.png""</string>
+
 </resources>

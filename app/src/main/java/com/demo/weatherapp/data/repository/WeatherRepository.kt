@@ -1,6 +1,8 @@
 package com.demo.weatherapp.data.repository
 
 import androidx.lifecycle.MutableLiveData
+import com.demo.weatherapp.R
+import com.demo.weatherapp.app.framework.ResourceProvider
 import com.demo.weatherapp.app.unixTimeStampToLocalDateTime
 import com.demo.weatherapp.app.wasLessThan24HrsAgo
 import com.demo.weatherapp.app.wasMoreThan24HrsAgo
@@ -12,10 +14,12 @@ import io.realm.RealmObject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.koin.core.inject
 
 class WeatherRepository(
     private val realm: Realm = Realm.getDefaultInstance(),
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val resourceProvider: ResourceProvider
 ) : WeatherRepositoryApi {
 
     override suspend fun syncWeather(weatherState: MutableLiveData<Result<WeatherData>>) {
@@ -47,8 +51,8 @@ class WeatherRepository(
             return@withContext try {
                 weatherState.postValue(Result.Refreshing(true))
                 val result = WeatherApi.service.getByCity(
-                    "Belfast",
-                    "f45f1176cabb468b3b078caeb8ef955c"
+                    resourceProvider.getResource(R.string.default_city),
+                    resourceProvider.getResource(R.string.openweathermap_api_key)
                 )
                 if (result.isSuccessful) {
                     result.body()?.let {

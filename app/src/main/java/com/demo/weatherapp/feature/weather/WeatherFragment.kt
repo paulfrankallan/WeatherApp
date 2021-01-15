@@ -139,7 +139,7 @@ class WeatherFragment : Fragment() {
 
     private fun loadWeatherIcon(weatherData: WeatherState) =
         GlideApp.with(this@WeatherFragment)
-            .load(Uri.parse("https://openweathermap.org/img/w/${weatherData.icon}.png"))
+            .load(Uri.parse(getString(R.string.weather_icon_url, weatherData.icon)))
             .priority(Priority.IMMEDIATE)
             .apply(RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
             .centerCrop().into(binding.imgCurrentCondition)

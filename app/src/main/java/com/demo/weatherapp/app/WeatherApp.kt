@@ -63,7 +63,7 @@ class WeatherApp : Application() {
             factory { Realm.getDefaultInstance() }
             single { ResourceProvider(get()) }
             single { Dispatchers.IO }
-            single { WeatherRepository(get()) }
+            single { WeatherRepository(get(), get(), get()) }
         }
     }
 

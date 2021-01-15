@@ -22,7 +22,7 @@ class WeatherViewModel : ViewModel(), KoinComponent {
     private val resourceProvider: ResourceProvider by inject()
     private val repositoryObserver = MutableLiveData<Result<WeatherData>>()
 
-    private val dispatcher = Transformations.switchMap(actions) { action ->
+    private val actionDispatcher = Transformations.switchMap(actions) { action ->
         dispatch(action)
     }
 
@@ -36,15 +36,7 @@ class WeatherViewModel : ViewModel(), KoinComponent {
         }
     }
 
-    private val reducer = Transformations.map(dispatcher) {
-        when (it) {
-            is Result.Success -> mapWeatherData(it.data)
-            is Result.Refreshing -> weatherSate.copy(refreshing = it.refreshing)
-            is Result.Error -> weatherSate.copy()
-        }
-    }
-
-    private val repositoryReducer = Transformations.map(repositoryObserver) {
+    private val reducer = Transformations.map(repositoryObserver) {
         when (it) {
             is Result.Success -> mapWeatherData(it.data)
             is Result.Refreshing -> weatherSate.copy(refreshing = it.refreshing)
@@ -53,10 +45,7 @@ class WeatherViewModel : ViewModel(), KoinComponent {
     }
 
     val weather = MediatorLiveData<WeatherState>().apply {
-        addSource(repositoryReducer) {
-            weatherSate = it
-            value = it
-        }
+        addSource(actionDispatcher, {})
         addSource(reducer) {
             weatherSate = it
             value = it
