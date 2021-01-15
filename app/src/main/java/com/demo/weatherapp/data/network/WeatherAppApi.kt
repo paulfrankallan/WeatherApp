@@ -9,7 +9,6 @@ interface WeatherAppApi {
 
     companion object {
         const val BASE_URL = "https://api.openweathermap.org/data/2.5/"
-        const val ICON_URI = "http://openweathermap.org/img/w/";
     }
 
     @GET("weather/")

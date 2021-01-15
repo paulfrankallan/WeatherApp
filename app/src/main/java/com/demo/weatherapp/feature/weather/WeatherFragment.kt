@@ -62,11 +62,12 @@ class WeatherFragment : Fragment() {
 
     // region Render View
 
-    private fun render(weatherData: WeatherState) {
-        updateProgressSpinner(weatherData.refreshing)
-        populateWeatherFields(weatherData)
-        populateLastUpdatedField(weatherData)
-        loadWeatherIcon(weatherData)
+    private fun render(weatherState: WeatherState) {
+        updateProgressSpinner(weatherState.refreshing)
+        populateWeatherFields(weatherState)
+        populateLastUpdatedField(weatherState)
+        loadWeatherIcon(weatherState)
+        handleUserFeedback(weatherState)
     }
 
     private fun populateWeatherFields(weatherData: WeatherState) {
@@ -87,6 +88,16 @@ class WeatherFragment : Fragment() {
                     )
                 )
             )
+        }
+    }
+
+    private fun handleUserFeedback(weatherState: WeatherState) {
+        weatherState.events.forEach { event ->
+            when(event) {
+                is WeatherState.Event.ShowSnackbar -> {
+                    showSnackbar(event.message)
+                }
+            }
         }
     }
 

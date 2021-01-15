@@ -5,7 +5,6 @@ import com.demo.weatherapp.R
 import com.demo.weatherapp.app.framework.ResourceProvider
 import com.demo.weatherapp.app.unixTimeStampToLocalDateTime
 import com.demo.weatherapp.app.wasLessThan24HrsAgo
-import com.demo.weatherapp.app.wasMoreThan24HrsAgo
 import com.demo.weatherapp.data.model.Result
 import com.demo.weatherapp.data.model.WeatherData
 import com.demo.weatherapp.data.network.WeatherApi
@@ -14,7 +13,6 @@ import io.realm.RealmObject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.koin.core.inject
 
 class WeatherRepository(
     private val realm: Realm = Realm.getDefaultInstance(),
@@ -24,26 +22,34 @@ class WeatherRepository(
 
     override suspend fun syncWeather(weatherState: MutableLiveData<Result<WeatherData>>) {
 
-        val localData = getLocal()
-
-        val lastUpdated = localData?.dt?.unixTimeStampToLocalDateTime()
-
-        lastUpdated?.wasLessThan24HrsAgo()?.let {
-            if(it) weatherState.value = Result.Success(localData)
+        when (val result = syncWeatherData(weatherState)) {
+            is Result.Success -> {
+                deleteAll()
+                save(result.data)
+                weatherState.value = result
+            }
+            is Result.Error -> {
+                // IF offline & local data < 24 hours old THEN return data, location & updated
+                // ELSE IF offline data doesn't exist or out-of-date THEN return error with no data
+                // Note pass through any error to be handled not just no network connection
+                getLocal()?.let { localData ->
+                    val lastUpdated = localData.dt?.unixTimeStampToLocalDateTime()
+                    lastUpdated?.wasLessThan24HrsAgo()?.let { dateGood ->
+                        if (dateGood) {
+                            // Error but we have good data, return error and data
+                            weatherState.value = Result.Error(result.exception, localData)
+                        } else {
+                            // Data out-of-date, return error
+                            weatherState.value = Result.Error(result.exception)
+                        }
+                    } ?: run { // Can't resolve date, return error
+                        weatherState.value = Result.Error(result.exception)
+                    }
+                } ?: run { // No weather data, return error
+                    weatherState.value = Result.Error(result.exception)
+                }
+            }
         }
-
-        lastUpdated?.wasMoreThan24HrsAgo()?.let {
-            // TODO
-        }
-
-        val networkData = syncWeatherData(weatherState)
-
-        if (networkData is Result.Success) {
-            deleteAll()
-            save(networkData.data)
-        }
-
-        weatherState.value = networkData
     }
 
     private suspend fun syncWeatherData(weatherState: MutableLiveData<Result<WeatherData>>): Result<WeatherData> =
@@ -74,6 +80,4 @@ class WeatherRepository(
     private fun getLocal() = realm.where(WeatherData::class.java).findFirst()
 
     private fun deleteAll() = realm.executeTransaction { it.deleteAll() }
-
-    val isEmpty = realm.isEmpty
 }

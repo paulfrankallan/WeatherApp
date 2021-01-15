@@ -9,9 +9,13 @@ data class WeatherState(
     val windDirection: String = "",
     val icon: String? = null,
     val refreshing: Boolean = false,
-    val updated: LocalDateTime? = null
+    val updated: LocalDateTime? = null,
+    var events: MutableList<Event> = mutableListOf(),
 ) {
     sealed class Action {
         object Refresh : Action()
+    }
+    sealed class Event {
+        class ShowSnackbar(val message: String) : Event()
     }
 }
