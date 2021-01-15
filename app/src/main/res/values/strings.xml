@@ -11,4 +11,15 @@
     <string name="example_wind_speed">20mph</string>
     <string name="example_wind_direction">North East</string>
     <string name="current_condition_image">Current Condition Image</string>
+
+    <string name="formatted_wind_speed">"%1$smph"</string>
+    <string name="formatted_temperature">"%1$s&#xb0;C"</string>
+
+    <string name="no_internet_connection">No internet connection</string>
+    <string name="progress_spinner_image">Progress Spinner Image</string>
+
+    <string name="error">Error.\n\nPlease check your internet connection and try again.</string>
+    <string name="refresh_button">Refresh Button</string>
+
+    <string name="last_updated">"Last updated: %1$s"</string>
 </resources>
