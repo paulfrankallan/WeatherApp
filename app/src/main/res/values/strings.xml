@@ -27,7 +27,18 @@
     <string name="refresh_button">Refresh Button</string>
 
     <string name="last_updated">"Last updated: %1$s"</string>
+    <string name="location">"Location: %1$s"</string>
 
     <string name="weather_icon_url">""https://openweathermap.org/img/w/%1$s.png""</string>
 
+    <string name="enable_gps">Enable your GPS and restart!</string>
+    <string name="location_permission">Location Permission</string>
+    <string name="access_location_message">This application requires access to your location to function!</string>
+    <string name="no">No</string>
+    <string name="ask_me">Ask me</string>
+    <string name="gps_required_message">GPS is required for this application to function!</string>
+
+    <string name="no_data_image">No data image</string>
+    <string name="no_data">No Data Available</string>
+    <string name="no_data_message">Check your internet connection &amp; location services and try again</string>
 </resources>

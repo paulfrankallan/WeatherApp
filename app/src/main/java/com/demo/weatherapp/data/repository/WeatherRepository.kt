@@ -1,5 +1,6 @@
 package com.demo.weatherapp.data.repository
 
+import android.location.Location
 import androidx.lifecycle.MutableLiveData
 import com.demo.weatherapp.R
 import com.demo.weatherapp.app.framework.ResourceProvider
@@ -20,9 +21,25 @@ class WeatherRepository(
     private val resourceProvider: ResourceProvider
 ) : WeatherRepositoryApi {
 
-    override suspend fun syncWeather(weatherState: MutableLiveData<Result<WeatherData>>) {
+    override suspend fun syncWeather(
+        weatherState: MutableLiveData<Result<WeatherData>>,
+        location: Location?
+    ) {
 
-        when (val result = syncWeatherData(weatherState)) {
+        // Show local data < 24 hours old right away while network call made
+        getLocal()?.let { localData ->
+            val lastUpdated = localData.dt?.unixTimeStampToLocalDateTime()
+            lastUpdated?.wasLessThan24HrsAgo()?.let { dateGood ->
+                if (dateGood) {
+                    weatherState.value = Result.Success(localData)
+                }
+            }
+        }
+
+        // We have no location info so don't make the network call
+        if(location == null) return
+
+        when (val result = getRemoteWeatherData(weatherState, location)) {
             is Result.Success -> {
                 deleteAll()
                 save(result.data)
@@ -52,13 +69,17 @@ class WeatherRepository(
         }
     }
 
-    private suspend fun syncWeatherData(weatherState: MutableLiveData<Result<WeatherData>>): Result<WeatherData> =
+    private suspend fun getRemoteWeatherData(
+        weatherState: MutableLiveData<Result<WeatherData>>,
+        location: Location
+    ): Result<WeatherData> =
         withContext(ioDispatcher) {
             return@withContext try {
                 weatherState.postValue(Result.Refreshing(true))
-                val result = WeatherApi.service.getByCity(
-                    resourceProvider.getResource(R.string.default_city),
-                    resourceProvider.getResource(R.string.openweathermap_api_key)
+                val result = WeatherApi.service.getWeather(
+                    lat = location.latitude,
+                    lon = location.longitude,
+                    appId = resourceProvider.getResource(R.string.openweathermap_api_key)
                 )
                 if (result.isSuccessful) {
                     result.body()?.let {

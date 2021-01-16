@@ -6,6 +6,7 @@ import com.demo.weatherapp.app.framework.ResourceProvider
 import com.demo.weatherapp.data.repository.WeatherRepository
 import com.demo.weatherapp.feature.weather.WeatherViewModel
 import com.jakewharton.threetenabp.AndroidThreeTen
+import com.karumi.dexter.Dexter
 import com.pixplicity.easyprefs.library.Prefs
 import io.realm.Realm
 import io.realm.RealmConfiguration

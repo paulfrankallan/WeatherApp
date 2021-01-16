@@ -4,6 +4,7 @@ import androidx.lifecycle.*
 import com.demo.weatherapp.R
 import com.demo.weatherapp.app.degreesToHeadingString
 import com.demo.weatherapp.app.framework.ResourceProvider
+import com.demo.weatherapp.app.location.LocationClientLiveData
 import com.demo.weatherapp.app.unixTimeStampToLocalDateTime
 import com.demo.weatherapp.data.model.Result
 import com.demo.weatherapp.data.model.WeatherData
@@ -12,12 +13,17 @@ import com.demo.weatherapp.data.repository.WeatherRepository
 import com.demo.weatherapp.feature.weather.WeatherState.Action
 import com.demo.weatherapp.feature.weather.WeatherState.Event
 import org.koin.core.KoinComponent
+import org.koin.core.get
 import org.koin.core.inject
+import org.threeten.bp.ZoneId
+import org.threeten.bp.format.DateTimeFormatter
+import org.threeten.bp.format.FormatStyle
 import kotlin.math.roundToInt
 
 class WeatherViewModel : ViewModel(), KoinComponent {
 
     val actions = MutableLiveData<Action>()
+    val locationLiveData = LocationClientLiveData(get())
     private var weatherState = WeatherState()
     private val weatherRepository: WeatherRepository by inject()
     private val resourceProvider: ResourceProvider by inject()
@@ -32,7 +38,7 @@ class WeatherViewModel : ViewModel(), KoinComponent {
     ): LiveData<Result<WeatherData>> = liveData {
         when (action) {
             is Action.Refresh -> {
-                weatherRepository.syncWeather(repositoryObserver)
+                weatherRepository.syncWeather(repositoryObserver, action.location)
             }
         }
     }
@@ -54,26 +60,48 @@ class WeatherViewModel : ViewModel(), KoinComponent {
         }
     }
 
-    private fun mapWeatherData(weatherData: WeatherData) = weatherState.copy(
-        currentCondition = weatherData.weather?.get(0)?.main ?: "",
-        temperature = mapTemperature(weatherData),
-        windSpeed = mapWindSpeed(weatherData),
-        windDirection = weatherData.wind?.deg.degreesToHeadingString(),
-        icon = weatherData.weather?.get(0)?.icon ?: "",
-        updated = weatherData.dt?.unixTimeStampToLocalDateTime()
-    )
+    private fun mapWeatherData(weatherData: WeatherData?): WeatherState {
+        return weatherData?.let {
+            weatherState.copy(
+                location = formatLocation(weatherData),
+                currentCondition = weatherData.weather?.get(0)?.main ?: "",
+                temperature = formatTemperature(weatherData),
+                windSpeed = formatWindSpeed(weatherData),
+                windDirection = weatherData.wind?.deg.degreesToHeadingString(),
+                icon = weatherData.weather?.get(0)?.icon ?: "",
+                updated = formatUpdated(weatherData),
+                noData = false
+            )
+        } ?: WeatherState(noData = true)
+    }
 
-    private fun mapTemperature(weatherData: WeatherData): String {
-        return weatherData.main?.temp?.roundToInt()?.toString()?.let {
+    private fun formatTemperature(weatherData: WeatherData) =
+        weatherData.main?.temp?.roundToInt()?.toString()?.let {
             resourceProvider.getResource(R.string.formatted_temperature, it)
         } ?: ""
-    }
 
-    private fun mapWindSpeed(weatherData: WeatherData): String {
-        return weatherData.wind?.speed?.roundToInt()?.toString()?.let {
+    private fun formatWindSpeed(weatherData: WeatherData) =
+        weatherData.wind?.speed?.roundToInt()?.toString()?.let {
             resourceProvider.getResource(R.string.formatted_wind_speed, it)
         } ?: ""
-    }
+
+    private fun formatLocation(weatherData: WeatherData) =
+        weatherData.name?.let {
+            resourceProvider.getResource(R.string.location, it)
+        }
+
+    private fun formatUpdated(weatherData: WeatherData) =
+        weatherData.dt?.unixTimeStampToLocalDateTime()
+            ?.atZone(ZoneId.systemDefault())?.let {
+                return resourceProvider.getResource(
+                    R.string.last_updated,
+                    it.format(
+                        DateTimeFormatter.ofLocalizedDateTime(
+                            FormatStyle.MEDIUM, FormatStyle.SHORT
+                        )
+                    )
+                )
+            } ?: ""
 
     private fun handleError(exception: Exception, weatherData: WeatherData?): WeatherState {
         when (exception) {
@@ -88,7 +116,7 @@ class WeatherViewModel : ViewModel(), KoinComponent {
                 )
             }
         }
-        // If we have good (recent < 24hrs) data then return it.
-        return weatherData?.let { mapWeatherData(it) } ?: weatherState
+        // If we have good data (recent <= 24hrs) then return it.
+        return mapWeatherData(weatherData)
     }
 }

@@ -7,5 +7,6 @@ open class WeatherData(
     var weather: RealmList<Weather>? = null,
     var main: Main? = null,
     var wind: Wind? = null,
-    var dt: Long? = null
+    var dt: Long? = null,
+    var name: String? = null
 ): RealmObject()
