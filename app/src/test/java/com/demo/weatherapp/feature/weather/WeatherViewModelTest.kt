@@ -4,6 +4,7 @@ import android.content.Context
 import android.location.Location
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
+import com.demo.weatherapp.app.framework.DefaultResourceProvider
 import com.demo.weatherapp.app.framework.ResourceProvider
 import com.demo.weatherapp.app.location.LocationClientLiveData
 import com.demo.weatherapp.data.repository.WeatherAppRepository
@@ -34,13 +35,11 @@ class WeatherViewModelTest: KoinComponent {
     @get:Rule
     var instantTaskExecutorRule = InstantTaskExecutorRule()
 
-    @Mock
     private var weatherObserver: Observer<WeatherState> = mock()
-
-    private val weatherRepository: WeatherAppRepository = mock()
-    private val resourceProvider: ResourceProvider = mock()
-    private val locationClientLiveData: LocationClientLiveData = mock()
     private val context: Context = mock()
+    private val weatherRepository: WeatherAppRepository = mock()
+    private val resourceProvider: DefaultResourceProvider = mock()
+    private val locationClientLiveData: LocationClientLiveData = mock()
 
     private val testModule = module {
         single { context }

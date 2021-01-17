@@ -63,7 +63,7 @@ class WeatherFragment : Fragment(), MultiplePermissionsListener {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // Configure binding
+        // Configure view binding
         binding = WeatherFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -82,6 +82,8 @@ class WeatherFragment : Fragment(), MultiplePermissionsListener {
     }
 
     private fun refresh() {
+        // Permissions library call to check permissions.
+        // Will refresh if permissions good as per onPermissionsChecked(..) below.
         Dexter.withContext(requireContext())
             .withPermissions(
                 Manifest.permission.ACCESS_FINE_LOCATION,
@@ -137,15 +139,10 @@ class WeatherFragment : Fragment(), MultiplePermissionsListener {
 
     // region Snackbar
 
-    private fun showSnackbar(message: String) {
-        Snackbar.make(binding.weatherFragmentRoot, message, Snackbar.LENGTH_LONG).apply {
-            (((view as ViewGroup)
-                .getChildAt(0) as ViewGroup)
-                .getChildAt(1) as TextView).apply {
-                setTextColor(Color.WHITE)
-                isAllCaps = false
-            }
-        }.show()
+    private fun showSnackbar(message: String) = view?.let {
+        Snackbar.make(it, message, Snackbar.LENGTH_LONG)
+            .setTextColor(Color.WHITE)
+            .show()
     }
 
     // endregion
@@ -224,33 +221,28 @@ class WeatherFragment : Fragment(), MultiplePermissionsListener {
         }
     }
 
-    private fun showSettingsDialog() {
-        val builder: AlertDialog.Builder = AlertDialog.Builder(requireActivity())
-        builder.setTitle("Permissions Required")
-        builder.setMessage("This app needs permission to use this feature. You can grant them in app settings.")
-        builder.setPositiveButton("GOTO SETTINGS")
-        { dialog, which ->
+    private fun showSettingsDialog() = AlertDialog.Builder(requireActivity()).apply {
+        setTitle("Permissions Required")
+        setMessage("This app needs permission to use this feature. You can grant them in app settings.")
+        setPositiveButton("GOTO SETTINGS") { dialog, _ ->
             dialog.cancel()
             openSettings()
         }
-        builder.setNegativeButton("Cancel") { dialog, which -> dialog.cancel() }
-        builder.show()
+        setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
+        show()
     }
 
     // navigating user to app settings
-    private fun openSettings() {
-        val intent = Intent(ACTION_APPLICATION_DETAILS_SETTINGS)
-        val uri = Uri.fromParts("package", requireActivity().packageName, null)
-        intent.data = uri
-        startActivityForResult(intent, 101)
-    }
+    private fun openSettings() =
+        startActivityForResult(Intent(ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.fromParts("package", requireActivity().packageName, null)
+        }, 101)
+
 
     override fun onPermissionRationaleShouldBeShown(
         permissionRequests: MutableList<PermissionRequest>,
         token: PermissionToken
-    ) {
-        token.continuePermissionRequest()
-    }
+    ) = token.continuePermissionRequest()
 
     // endregion
 

@@ -78,7 +78,9 @@ class WeatherViewModel : ViewModel(), KoinComponent {
 
     // region Map & format data
 
-    private fun mapWeatherData(weatherData: WeatherData?): WeatherState {
+    private fun mapWeatherData(
+        weatherData: WeatherData?, events: MutableList<Event> = mutableListOf()
+    ): WeatherState {
         return weatherData?.let {
             weatherState.copy(
                 location = formatLocation(weatherData),
@@ -88,7 +90,8 @@ class WeatherViewModel : ViewModel(), KoinComponent {
                 windDirection = weatherData.wind?.deg.degreesToHeadingString(),
                 icon = weatherData.weather?.get(0)?.icon ?: "",
                 updated = formatUpdated(weatherData),
-                noData = false
+                noData = false,
+                events = events
             )
         } ?: WeatherState(noData = true)
     }
@@ -126,20 +129,20 @@ class WeatherViewModel : ViewModel(), KoinComponent {
     // region Error handling
 
     private fun handleError(exception: Exception, weatherData: WeatherData?): WeatherState {
-        when (exception) {
-            is NoConnectionError -> {
-                weatherState.events.add(
-                    Event.ShowSnackbar(resourceProvider.getResource(R.string.no_internet_connection))
-                )
-            }
-            else -> {
-                weatherState.events.add(
-                    Event.ShowSnackbar(resourceProvider.getResource(R.string.something_went_wrong))
-                )
-            }
-        }
-        // If we have good data (recent <= 24hrs) then return it.
-        return mapWeatherData(weatherData)
+        // Return Error info and If we have good data (recent <= 24hrs) then return it also.
+        return mapWeatherData(
+            weatherData,
+            arrayListOf(
+                when (exception) {
+                    is NoConnectionError -> {
+                        Event.ShowSnackbar(resourceProvider.getResource(R.string.no_internet_connection))
+                    }
+                    else -> {
+                        Event.ShowSnackbar(resourceProvider.getResource(R.string.something_went_wrong))
+                    }
+                }
+            )
+        )
     }
 
     // endregion
