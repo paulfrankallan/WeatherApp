@@ -1,6 +1,5 @@
 package com.demo.weatherapp.app.framework
 
-import android.content.Context
 import androidx.annotation.StringRes
 
 /**

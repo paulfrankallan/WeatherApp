@@ -3,14 +3,12 @@ package com.demo.weatherapp.app
 import android.app.Application
 import com.demo.weatherapp.app.framework.ResourceProvider
 import com.demo.weatherapp.app.location.LocationClientLiveData
-import com.demo.weatherapp.data.network.WeatherAppApi
 import com.demo.weatherapp.data.network.WeatherAppClient
 import com.demo.weatherapp.data.repository.WeatherAppRepository
 import com.demo.weatherapp.feature.weather.WeatherViewModel
 import com.jakewharton.threetenabp.AndroidThreeTen
 import io.realm.Realm
 import io.realm.RealmConfiguration
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel

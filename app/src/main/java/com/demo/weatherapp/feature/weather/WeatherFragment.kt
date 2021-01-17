@@ -3,7 +3,6 @@ package com.demo.weatherapp.feature.weather
 import android.Manifest
 import android.content.Intent
 import android.graphics.Color
-import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
