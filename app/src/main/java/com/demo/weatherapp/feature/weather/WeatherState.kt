@@ -10,7 +10,7 @@ data class WeatherState(
     val windDirection: String = "",
     val icon: String? = null,
     val refreshing: Boolean = false,
-    val noData: Boolean = true,
+    val noData: Boolean = false,
     val updated: String? = null,
     var events: MutableList<Event> = mutableListOf(),
 ) {

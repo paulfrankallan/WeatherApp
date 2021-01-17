@@ -26,7 +26,6 @@ class WeatherViewModel : ViewModel(), KoinComponent {
 
     val location: LocationClientLiveData by inject()
     private val actions = MutableLiveData<Action>()
-    private var weatherState = WeatherState()
     private val weatherRepository: WeatherAppRepository by inject()
     private val resourceProvider: ResourceProvider by inject()
     private val repositoryObserver = MutableLiveData<Result<WeatherData>>()
@@ -53,10 +52,10 @@ class WeatherViewModel : ViewModel(), KoinComponent {
         }
     }
 
-    private val reducer = Transformations.map(repositoryObserver) {
+    private val reducer: LiveData<WeatherState> = Transformations.map(repositoryObserver) {
         when (it) {
             is Result.Success -> mapWeatherData(it.data)
-            is Result.Refreshing -> weatherState.copy(refreshing = it.refreshing)
+            is Result.Refreshing -> weather.value?.copy(refreshing = it.refreshing)
             is Result.Error -> handleError(it.exception, it.data)
         }
     }
@@ -66,11 +65,11 @@ class WeatherViewModel : ViewModel(), KoinComponent {
     // region Mediator
 
     val weather = MediatorLiveData<WeatherState>().apply {
-        addSource(actionDispatcher) {}
-        addSource(reducer) {
-            weatherState = it
+        value = WeatherState(refreshing = true) // Initialise state
+        addSource(actionDispatcher) {} // Handle actions
+        addSource(reducer) { // Handle state
             value = it
-            weatherState.events.clear()
+            it.events.clear()
         }
     }
 
@@ -81,8 +80,8 @@ class WeatherViewModel : ViewModel(), KoinComponent {
     private fun mapWeatherData(
         weatherData: WeatherData?, events: MutableList<Event> = mutableListOf()
     ): WeatherState {
-        return weatherData?.let {
-            weatherState.copy(
+        val weather = weatherData?.let {
+            weather.value?.copy(
                 location = formatLocation(weatherData),
                 currentCondition = weatherData.weather?.get(0)?.main ?: "",
                 temperature = formatTemperature(weatherData),
@@ -90,10 +89,11 @@ class WeatherViewModel : ViewModel(), KoinComponent {
                 windDirection = weatherData.wind?.deg.degreesToHeadingString(),
                 icon = weatherData.weather?.get(0)?.icon ?: "",
                 updated = formatUpdated(weatherData),
-                noData = false,
-                events = events
+                noData = false
             )
         } ?: WeatherState(noData = true)
+        weather.events.addAll(events)
+        return weather
     }
 
     private fun formatTemperature(weatherData: WeatherData) =
