@@ -2,27 +2,27 @@ package com.demo.weatherapp.data.repository
 
 import android.location.Location
 import androidx.lifecycle.MutableLiveData
-import com.demo.weatherapp.R
+import com.demo.weatherapp.BuildConfig
 import com.demo.weatherapp.app.framework.ResourceProvider
 import com.demo.weatherapp.app.unixTimeStampToLocalDateTime
 import com.demo.weatherapp.app.wasLessThan24HrsAgo
 import com.demo.weatherapp.data.model.Result
 import com.demo.weatherapp.data.model.WeatherData
-import com.demo.weatherapp.data.network.WeatherApi
+import com.demo.weatherapp.data.network.WeatherAppApi
 import io.realm.Realm
 import io.realm.RealmObject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class WeatherRepository(
+class WeatherAppRepository(
     private val realm: Realm = Realm.getDefaultInstance(),
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    private val resourceProvider: ResourceProvider
-) : WeatherRepositoryApi {
+    private val weatherAppApi: WeatherAppApi
+) : WeatherAppRepositoryApi {
 
     override suspend fun syncWeather(
-        weatherState: MutableLiveData<Result<WeatherData>>,
+        repositoryObserver: MutableLiveData<Result<WeatherData>>,
         location: Location?
     ) {
 
@@ -31,7 +31,7 @@ class WeatherRepository(
             val lastUpdated = localData.dt?.unixTimeStampToLocalDateTime()
             lastUpdated?.wasLessThan24HrsAgo()?.let { dateGood ->
                 if (dateGood) {
-                    weatherState.value = Result.Success(localData)
+                    repositoryObserver.value = Result.Success(localData)
                 }
             }
         }
@@ -39,11 +39,11 @@ class WeatherRepository(
         // We have no location info so don't make the network call
         if(location == null) return
 
-        when (val result = getRemoteWeatherData(weatherState, location)) {
+        when (val result = getRemoteWeatherData(repositoryObserver, location)) {
             is Result.Success -> {
                 deleteAll()
                 save(result.data)
-                weatherState.value = result
+                repositoryObserver.value = result
             }
             is Result.Error -> {
                 // IF offline & local data < 24 hours old THEN return data, location & updated
@@ -54,44 +54,45 @@ class WeatherRepository(
                     lastUpdated?.wasLessThan24HrsAgo()?.let { dateGood ->
                         if (dateGood) {
                             // Error but we have good data, return error and data
-                            weatherState.value = Result.Error(result.exception, localData)
+                            repositoryObserver.value = Result.Error(result.exception, localData)
                         } else {
                             // Data out-of-date, return error
-                            weatherState.value = Result.Error(result.exception)
+                            repositoryObserver.value = Result.Error(result.exception)
                         }
                     } ?: run { // Can't resolve date, return error
-                        weatherState.value = Result.Error(result.exception)
+                        repositoryObserver.value = Result.Error(result.exception)
                     }
                 } ?: run { // No weather data, return error
-                    weatherState.value = Result.Error(result.exception)
+                    repositoryObserver.value = Result.Error(result.exception)
                 }
             }
         }
     }
 
     private suspend fun getRemoteWeatherData(
-        weatherState: MutableLiveData<Result<WeatherData>>,
+        repositoryObserver: MutableLiveData<Result<WeatherData>>,
         location: Location
     ): Result<WeatherData> =
         withContext(ioDispatcher) {
             return@withContext try {
-                weatherState.postValue(Result.Refreshing(true))
-                val result = WeatherApi.service.getWeather(
+                repositoryObserver.postValue(Result.Refreshing(true))
+                val result = weatherAppApi.getWeather(
                     lat = location.latitude,
                     lon = location.longitude,
-                    appId = resourceProvider.getResource(R.string.openweathermap_api_key)
+                    appId = BuildConfig.WEATHER_API_KEY,
+                    units = "metric"
                 )
                 if (result.isSuccessful) {
                     result.body()?.let {
-                        weatherState.postValue(Result.Refreshing(false))
+                        repositoryObserver.postValue(Result.Refreshing(false))
                         Result.Success(it)
                     } ?: Result.Error(Exception())
                 } else {
-                    weatherState.postValue(Result.Refreshing(false))
+                    repositoryObserver.postValue(Result.Refreshing(false))
                     Result.Error(Exception())
                 }
             } catch (exception: Exception) {
-                weatherState.postValue(Result.Refreshing(false))
+                repositoryObserver.postValue(Result.Refreshing(false))
                 Result.Error(exception)
             }
         }

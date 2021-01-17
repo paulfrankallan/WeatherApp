@@ -9,7 +9,7 @@ import com.demo.weatherapp.app.unixTimeStampToLocalDateTime
 import com.demo.weatherapp.data.model.Result
 import com.demo.weatherapp.data.model.WeatherData
 import com.demo.weatherapp.data.network.NoConnectionError
-import com.demo.weatherapp.data.repository.WeatherRepository
+import com.demo.weatherapp.data.repository.WeatherAppRepository
 import com.demo.weatherapp.feature.weather.WeatherState.Action
 import com.demo.weatherapp.feature.weather.WeatherState.Event
 import org.koin.core.KoinComponent
@@ -25,7 +25,7 @@ class WeatherViewModel : ViewModel(), KoinComponent {
     val actions = MutableLiveData<Action>()
     val locationLiveData = LocationClientLiveData(get())
     private var weatherState = WeatherState()
-    private val weatherRepository: WeatherRepository by inject()
+    private val weatherRepository: WeatherAppRepository by inject()
     private val resourceProvider: ResourceProvider by inject()
     private val repositoryObserver = MutableLiveData<Result<WeatherData>>()
 
@@ -59,6 +59,8 @@ class WeatherViewModel : ViewModel(), KoinComponent {
             weatherState.events.clear()
         }
     }
+
+    // Region Map & format data
 
     private fun mapWeatherData(weatherData: WeatherData?): WeatherState {
         return weatherData?.let {
@@ -103,6 +105,10 @@ class WeatherViewModel : ViewModel(), KoinComponent {
                 )
             } ?: ""
 
+    // endregion
+
+    // region Error handling
+
     private fun handleError(exception: Exception, weatherData: WeatherData?): WeatherState {
         when (exception) {
             is NoConnectionError -> {
@@ -119,4 +125,6 @@ class WeatherViewModel : ViewModel(), KoinComponent {
         // If we have good data (recent <= 24hrs) then return it.
         return mapWeatherData(weatherData)
     }
+
+    // endregion
 }

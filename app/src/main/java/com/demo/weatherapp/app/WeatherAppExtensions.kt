@@ -1,7 +1,5 @@
 package com.demo.weatherapp.app
 
-import android.content.Context
-import android.net.ConnectivityManager
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
@@ -26,12 +24,6 @@ fun Float?.degreesToHeadingString(): String {
             "West", "North West", "North"
         )[(this % 360 / 45).roundToInt()]
     } ?: ""
-}
-
-fun Context.isNetworkConnected(): Boolean {
-    val manager =
-        this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    return manager.activeNetworkInfo?.isConnected ?: false
 }
 
 fun <T> LiveData<T>.observeOnce(lifecycleOwner: LifecycleOwner, observer: Observer<T>) {
