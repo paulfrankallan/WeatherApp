@@ -257,16 +257,8 @@ class WeatherFragment : Fragment(), MultiplePermissionsListener {
     // region No data
 
     private fun handleNoData(weatherState: WeatherState) {
-        when (weatherState.noData) {
-            true -> {
-                binding.noContentLayout.visibility = VISIBLE
-                binding.weatherCard.visibility = GONE
-            }
-            false -> {
-                binding.noContentLayout.visibility = GONE
-                binding.weatherCard.visibility = VISIBLE
-            }
-        }
+        binding.noContentLayout.visibility = if(weatherState.noData) VISIBLE else GONE
+        binding.weatherCard.visibility = if(weatherState.noData) GONE else VISIBLE
     }
 
     // endregion
