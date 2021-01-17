@@ -18,13 +18,21 @@ fun Long.utcTimeStampToLocalDateTime(): LocalDateTime =
 
 fun Float?.degreesToHeadingString(): String {
     return this?.let {
-        arrayOf(
-            "North", "North East", "East",
-            "South East", "South", "South West",
-            "West", "North West", "North"
-        )[(this % 360 / 45).roundToInt()]
+        HEADINGS[(this % 360 / 45).roundToInt()]
     } ?: ""
 }
+
+val HEADINGS = arrayOf(
+    "North",
+    "North East",
+    "East",
+    "South East",
+    "South",
+    "South West",
+    "West",
+    "North West",
+    "North"
+)
 
 fun <T> LiveData<T>.observeOnce(lifecycleOwner: LifecycleOwner, observer: Observer<T>) {
     observe(

@@ -9,7 +9,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 
-class LocationClientLiveData(context: Context) : LiveData<Location?>() {
+open class LocationClientLiveData(context: Context) : LiveData<Location?>() {
 
     private var fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 

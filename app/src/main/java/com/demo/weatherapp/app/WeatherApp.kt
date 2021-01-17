@@ -2,6 +2,7 @@ package com.demo.weatherapp.app
 
 import android.app.Application
 import com.demo.weatherapp.app.framework.ResourceProvider
+import com.demo.weatherapp.app.location.LocationClientLiveData
 import com.demo.weatherapp.data.network.WeatherAppApi
 import com.demo.weatherapp.data.network.WeatherAppClient
 import com.demo.weatherapp.data.repository.WeatherAppRepository
@@ -49,6 +50,7 @@ class WeatherApp : Application() {
         val weatherModule = module {
             viewModel { WeatherViewModel() }
             factory { Realm.getDefaultInstance() }
+            single { LocationClientLiveData(get()) }
             single { ResourceProvider(get()) }
             single { Dispatchers.IO }
             single { WeatherAppClient.service }

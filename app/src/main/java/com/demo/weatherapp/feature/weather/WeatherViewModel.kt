@@ -1,5 +1,6 @@
 package com.demo.weatherapp.feature.weather
 
+import android.location.Location
 import androidx.lifecycle.*
 import com.demo.weatherapp.R
 import com.demo.weatherapp.app.degreesToHeadingString
@@ -13,7 +14,6 @@ import com.demo.weatherapp.data.repository.WeatherAppRepository
 import com.demo.weatherapp.feature.weather.WeatherState.Action
 import com.demo.weatherapp.feature.weather.WeatherState.Event
 import org.koin.core.KoinComponent
-import org.koin.core.get
 import org.koin.core.inject
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
@@ -24,14 +24,18 @@ class WeatherViewModel : ViewModel(), KoinComponent {
 
     // region Members
 
-    val actions = MutableLiveData<Action>()
-    val locationLiveData = LocationClientLiveData(get())
+    val location: LocationClientLiveData by inject()
+    private val actions = MutableLiveData<Action>()
     private var weatherState = WeatherState()
     private val weatherRepository: WeatherAppRepository by inject()
     private val resourceProvider: ResourceProvider by inject()
     private val repositoryObserver = MutableLiveData<Result<WeatherData>>()
 
     // endregion
+
+    fun syncWeather(location: Location?) {
+        actions.value = Action.Refresh(location)
+    }
 
     // region Dispatch & Reduce
 
@@ -62,7 +66,7 @@ class WeatherViewModel : ViewModel(), KoinComponent {
     // region Mediator
 
     val weather = MediatorLiveData<WeatherState>().apply {
-        addSource(actionDispatcher, {})
+        addSource(actionDispatcher) {}
         addSource(reducer) {
             weatherState = it
             value = it

@@ -1,17 +1,14 @@
 package com.demo.weatherapp.app.framework
 
 import android.content.Context
+import androidx.annotation.StringRes
 
 /**
  * ResourceProvider is a simple helper class for getting resources in non Android framework classes.
  */
-open class ResourceProvider(val context: Context) {
+class ResourceProvider(val context: Context) {
 
-  open fun getResource(resId: Int): String {
-    return context.getString(resId)
-  }
+  fun getResource(@StringRes resId: Int) = context.getString(resId)
 
-  open fun getResource(resId: Int, vararg format: Any): String {
-    return context.getString(resId, *format)
-  }
+  fun getResource(@StringRes resId: Int, vararg format: Any) = context.getString(resId, *format)
 }

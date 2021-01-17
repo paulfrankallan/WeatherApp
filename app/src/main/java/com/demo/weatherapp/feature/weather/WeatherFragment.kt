@@ -3,6 +3,7 @@ package com.demo.weatherapp.feature.weather
 import android.Manifest
 import android.content.Intent
 import android.graphics.Color
+import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
@@ -64,11 +65,7 @@ class WeatherFragment : Fragment(), MultiplePermissionsListener {
         savedInstanceState: Bundle?
     ): View {
         // Configure binding
-        binding = WeatherFragmentBinding.inflate(
-            inflater, container, false
-        ).apply {
-            viewModel = viewModel
-        }
+        binding = WeatherFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -217,8 +214,8 @@ class WeatherFragment : Fragment(), MultiplePermissionsListener {
     override fun onPermissionsChecked(report: MultiplePermissionsReport) {
 
         if (report.areAllPermissionsGranted()) {
-            viewModel.locationLiveData.observeOnce(viewLifecycleOwner) { location ->
-                viewModel.actions.value = WeatherState.Action.Refresh(location)
+            viewModel.location.observeOnce(viewLifecycleOwner) { location ->
+                viewModel.syncWeather(location)
             }
         }
 

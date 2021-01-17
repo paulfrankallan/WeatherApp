@@ -14,7 +14,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class WeatherAppRepository(
+open class WeatherAppRepository(
     private val realm: Realm = Realm.getDefaultInstance(),
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val weatherAppApi: WeatherAppApi

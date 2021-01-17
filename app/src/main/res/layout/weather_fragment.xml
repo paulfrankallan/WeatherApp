@@ -1,191 +1,182 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:id="@+id/weather_fragment_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="16dp"
+    tools:context=".feature.weather.WeatherFragment">
 
-    <data>
-
-        <variable
-            name="viewModel"
-            type="com.demo.weatherapp.feature.weather.WeatherViewModel" />
-    </data>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/weather_fragment_root"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/weather_card"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="16dp"
-        tools:context=".feature.weather.WeatherFragment">
+        android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:elevation="8dp"
+        app:cardUseCompatPadding="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/weather_card"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:clipChildren="false"
-            android:clipToPadding="false"
-            android:elevation="8dp"
-            app:cardUseCompatPadding="true"
+            android:layout_margin="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
+            <LinearLayout
+                android:id="@+id/leftPanel"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:orientation="vertical"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <LinearLayout
-                    android:id="@+id/leftPanel"
+                <TextView
+                    android:id="@+id/label_current_condition"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
+                    android:fontFamily="sans-serif-medium"
+                    android:padding="4dp"
+                    android:text="@string/current_condition" />
 
-                    <TextView
-                        android:id="@+id/label_current_condition"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-medium"
-                        android:padding="4dp"
-                        android:text="@string/current_condition" />
-
-                    <TextView
-                        android:id="@+id/label_temp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-medium"
-                        android:padding="4dp"
-                        android:text="@string/temperature" />
-
-                    <TextView
-                        android:id="@+id/label_wind_speed"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-medium"
-                        android:padding="4dp"
-                        android:text="@string/wind_speed" />
-
-                    <TextView
-                        android:id="@+id/label_wind_direction"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-medium"
-                        android:padding="4dp"
-                        android:text="@string/wind_direction" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/rightPanel"
+                <TextView
+                    android:id="@+id/label_temp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/leftPanel"
-                    app:layout_constraintTop_toTopOf="parent">
+                    android:fontFamily="sans-serif-medium"
+                    android:padding="4dp"
+                    android:text="@string/temperature" />
 
-                    <TextView
-                        android:id="@+id/value_current_condition"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-medium"
-                        android:padding="4dp"
-                        tools:text="@string/example_current_condition" />
+                <TextView
+                    android:id="@+id/label_wind_speed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:padding="4dp"
+                    android:text="@string/wind_speed" />
 
-                    <TextView
-                        android:id="@+id/value_temperature"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-medium"
-                        android:padding="4dp"
-                        tools:text="@string/example_temperature" />
+                <TextView
+                    android:id="@+id/label_wind_direction"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:padding="4dp"
+                    android:text="@string/wind_direction" />
 
-                    <TextView
-                        android:id="@+id/value_wind_speed"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-medium"
-                        android:padding="4dp"
-                        tools:text="@string/example_wind_speed" />
+            </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/value_wind_direction"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-medium"
-                        android:padding="4dp"
-                        tools:text="@string/example_wind_direction" />
+            <LinearLayout
+                android:id="@+id/rightPanel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/leftPanel"
+                app:layout_constraintTop_toTopOf="parent">
 
-                </LinearLayout>
+                <TextView
+                    android:id="@+id/value_current_condition"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:padding="4dp"
+                    tools:text="@string/example_current_condition" />
 
-                <ImageView
-                    android:id="@+id/img_current_condition"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:contentDescription="@string/current_condition_image"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:src="@android:drawable/btn_star_big_on" />
+                <TextView
+                    android:id="@+id/value_temperature"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:padding="4dp"
+                    tools:text="@string/example_temperature" />
 
-                <ImageView
-                    android:id="@+id/progress_spinner"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:contentDescription="@string/progress_spinner_image"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                <TextView
+                    android:id="@+id/value_wind_speed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:padding="4dp"
+                    tools:text="@string/example_wind_speed" />
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                <TextView
+                    android:id="@+id/value_wind_direction"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:padding="4dp"
+                    tools:text="@string/example_wind_direction" />
 
-        </androidx.cardview.widget.CardView>
+            </LinearLayout>
 
-        <TextView
-            android:id="@+id/last_updated"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-medium"
-            android:padding="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/weather_card" />
+            <ImageView
+                android:id="@+id/img_current_condition"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/current_condition_image"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:src="@android:drawable/btn_star_big_on" />
 
-        <TextView
-            android:id="@+id/location"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-medium"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/last_updated" />
+            <ImageView
+                android:id="@+id/progress_spinner"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/progress_spinner_image"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <FrameLayout
-            android:id="@+id/no_content_layout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone">
-            <include layout="@layout/no_content_layout"/>
-        </FrameLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:layout_marginEnd="280dp"
-            android:layout_marginBottom="164dp"
-            android:clickable="true"
-            android:contentDescription="@string/refresh_button"
-            android:focusable="true"
-            android:src="@android:drawable/stat_notify_sync"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+    </androidx.cardview.widget.CardView>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</layout>
+    <TextView
+        android:id="@+id/last_updated"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-medium"
+        android:padding="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/weather_card" />
+
+    <TextView
+        android:id="@+id/location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-medium"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/last_updated" />
+
+    <FrameLayout
+        android:id="@+id/no_content_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <include layout="@layout/no_content_layout" />
+    </FrameLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:layout_marginEnd="280dp"
+        android:layout_marginBottom="164dp"
+        android:clickable="true"
+        android:contentDescription="@string/refresh_button"
+        android:focusable="true"
+        android:src="@android:drawable/stat_notify_sync"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
