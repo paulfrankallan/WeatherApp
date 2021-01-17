@@ -25,7 +25,7 @@ import org.mockito.Mock
 import retrofit2.Response
 
 @ExperimentalCoroutinesApi
-class WeatherRepositoryTest {
+class WeatherAppRepositoryTest {
 
     // region Setup
 
