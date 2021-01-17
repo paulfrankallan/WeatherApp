@@ -3,8 +3,7 @@ package com.demo.weatherapp.data.repository
 import android.location.Location
 import androidx.lifecycle.MutableLiveData
 import com.demo.weatherapp.BuildConfig
-import com.demo.weatherapp.app.framework.ResourceProvider
-import com.demo.weatherapp.app.unixTimeStampToLocalDateTime
+import com.demo.weatherapp.app.utcTimeStampToLocalDateTime
 import com.demo.weatherapp.app.wasLessThan24HrsAgo
 import com.demo.weatherapp.data.model.Result
 import com.demo.weatherapp.data.model.WeatherData
@@ -21,6 +20,8 @@ class WeatherAppRepository(
     private val weatherAppApi: WeatherAppApi
 ) : WeatherAppRepositoryApi {
 
+    // region Sync weather
+
     override suspend fun syncWeather(
         repositoryObserver: MutableLiveData<Result<WeatherData>>,
         location: Location?
@@ -28,7 +29,7 @@ class WeatherAppRepository(
 
         // Show local data < 24 hours old right away while network call made
         getLocal()?.let { localData ->
-            val lastUpdated = localData.dt?.unixTimeStampToLocalDateTime()
+            val lastUpdated = localData.dt?.utcTimeStampToLocalDateTime()
             lastUpdated?.wasLessThan24HrsAgo()?.let { dateGood ->
                 if (dateGood) {
                     repositoryObserver.value = Result.Success(localData)
@@ -50,7 +51,7 @@ class WeatherAppRepository(
                 // ELSE IF offline data doesn't exist or out-of-date THEN return error with no data
                 // Note pass through any error to be handled not just no network connection
                 getLocal()?.let { localData ->
-                    val lastUpdated = localData.dt?.unixTimeStampToLocalDateTime()
+                    val lastUpdated = localData.dt?.utcTimeStampToLocalDateTime()
                     lastUpdated?.wasLessThan24HrsAgo()?.let { dateGood ->
                         if (dateGood) {
                             // Error but we have good data, return error and data
@@ -68,6 +69,10 @@ class WeatherAppRepository(
             }
         }
     }
+
+    // endregion
+
+    // region Remote data source
 
     private suspend fun getRemoteWeatherData(
         repositoryObserver: MutableLiveData<Result<WeatherData>>,
@@ -97,9 +102,15 @@ class WeatherAppRepository(
             }
         }
 
+    // endregion
+
+    // region Local data operations
+
     private fun save(obj: RealmObject) = realm.executeTransaction { it.insertOrUpdate(obj) }
 
     private fun getLocal() = realm.where(WeatherData::class.java).findFirst()
 
     private fun deleteAll() = realm.executeTransaction { it.deleteAll() }
+
+    // endregion
 }

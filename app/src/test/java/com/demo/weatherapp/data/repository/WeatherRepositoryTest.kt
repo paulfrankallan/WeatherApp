@@ -5,7 +5,6 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.demo.weatherapp.TestCoroutineRule
-import com.demo.weatherapp.app.framework.ResourceProvider
 import com.demo.weatherapp.data.model.Result
 import com.demo.weatherapp.data.model.WeatherData
 import com.demo.weatherapp.data.network.WeatherAppApi
@@ -22,14 +21,13 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.ArgumentCaptor
-import org.mockito.Captor
 import org.mockito.Mock
 import retrofit2.Response
 
-
 @ExperimentalCoroutinesApi
 class WeatherRepositoryTest {
+
+    // region Setup
 
     // Test subject
     private lateinit var weatherRepository: WeatherAppRepository
@@ -41,20 +39,14 @@ class WeatherRepositoryTest {
     var testCoroutineRule = TestCoroutineRule()
 
     private val testCoroutineDispatcher = TestCoroutineDispatcher()
-
     private val testCoroutineScope = TestCoroutineScope(testCoroutineDispatcher)
 
-    //private val ioTestDispatcher = TestCoroutineDispatcher()
     private var realm: Realm = mock()
     private var realmQuery: RealmQuery<WeatherData> = mock()
     private var weatherAppApi: WeatherAppApi = mock()
-    private var resourceProvider: ResourceProvider = mock()
 
     @Mock
     private var weatherStateObserver: Observer<Result<WeatherData>> = mock()
-
-    @Captor
-    private val captor: ArgumentCaptor<Result<WeatherData>>? = null
 
     @Before
     fun setUp() {
@@ -74,9 +66,12 @@ class WeatherRepositoryTest {
     @After
     fun tearDown() {
         Dispatchers.resetMain()
-        //ioTestDispatcher.cleanupTestCoroutines()
         testCoroutineDispatcher.cleanupTestCoroutines()
     }
+
+    // endregion
+
+    // region Tests
 
     @Test
     fun `syncWeather - Happy Path`() = testCoroutineRule.runBlockingTest {
@@ -116,4 +111,6 @@ class WeatherRepositoryTest {
         // Verify no further interactions with weatherStateObserver
 //        verifyNoMoreInteractions(weatherStateObserver)
     }
+
+    // endregion
 }

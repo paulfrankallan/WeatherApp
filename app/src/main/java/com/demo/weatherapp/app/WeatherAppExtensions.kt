@@ -12,7 +12,7 @@ import kotlin.math.roundToInt
 fun LocalDateTime.wasLessThan24HrsAgo() =
     this.isAfter(LocalDateTime.now().minusHours(24))
 
-fun Long.unixTimeStampToLocalDateTime(): LocalDateTime =
+fun Long.utcTimeStampToLocalDateTime(): LocalDateTime =
     Instant.ofEpochMilli(Date(this * 1000).time)
         .atZone(ZoneId.systemDefault()).toLocalDateTime()
 

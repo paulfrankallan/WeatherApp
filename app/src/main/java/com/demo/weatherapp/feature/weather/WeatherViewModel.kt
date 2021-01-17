@@ -5,7 +5,7 @@ import com.demo.weatherapp.R
 import com.demo.weatherapp.app.degreesToHeadingString
 import com.demo.weatherapp.app.framework.ResourceProvider
 import com.demo.weatherapp.app.location.LocationClientLiveData
-import com.demo.weatherapp.app.unixTimeStampToLocalDateTime
+import com.demo.weatherapp.app.utcTimeStampToLocalDateTime
 import com.demo.weatherapp.data.model.Result
 import com.demo.weatherapp.data.model.WeatherData
 import com.demo.weatherapp.data.network.NoConnectionError
@@ -22,12 +22,18 @@ import kotlin.math.roundToInt
 
 class WeatherViewModel : ViewModel(), KoinComponent {
 
+    // region Members
+
     val actions = MutableLiveData<Action>()
     val locationLiveData = LocationClientLiveData(get())
     private var weatherState = WeatherState()
     private val weatherRepository: WeatherAppRepository by inject()
     private val resourceProvider: ResourceProvider by inject()
     private val repositoryObserver = MutableLiveData<Result<WeatherData>>()
+
+    // endregion
+
+    // region Dispatch & Reduce
 
     private val actionDispatcher = Transformations.switchMap(actions) { action ->
         dispatch(action)
@@ -51,6 +57,10 @@ class WeatherViewModel : ViewModel(), KoinComponent {
         }
     }
 
+    // endregion
+
+    // region Mediator
+
     val weather = MediatorLiveData<WeatherState>().apply {
         addSource(actionDispatcher, {})
         addSource(reducer) {
@@ -60,7 +70,9 @@ class WeatherViewModel : ViewModel(), KoinComponent {
         }
     }
 
-    // Region Map & format data
+    // endregion
+
+    // region Map & format data
 
     private fun mapWeatherData(weatherData: WeatherData?): WeatherState {
         return weatherData?.let {
@@ -93,7 +105,7 @@ class WeatherViewModel : ViewModel(), KoinComponent {
         }
 
     private fun formatUpdated(weatherData: WeatherData) =
-        weatherData.dt?.unixTimeStampToLocalDateTime()
+        weatherData.dt?.utcTimeStampToLocalDateTime()
             ?.atZone(ZoneId.systemDefault())?.let {
                 return resourceProvider.getResource(
                     R.string.last_updated,
