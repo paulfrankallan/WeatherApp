@@ -51,11 +51,10 @@ class WeatherFragment : Fragment(), MultiplePermissionsListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        LocationManager(requireContext()).turnGPSOn(object : LocationManager.GpsProviderListener {
-            override fun isGpsProviderEnabled(isGPSEnabled: Boolean) {
-                this@WeatherFragment.isGPSEnabled = isGPSEnabled
-            }
-        })
+        // Prompt user to turn on Gps if it's not already on.
+        LocationManager(requireContext()).turnOnGps { isGPSEnabled ->
+            this@WeatherFragment.isGPSEnabled = isGPSEnabled
+        }
     }
 
     override fun onCreateView(
@@ -146,7 +145,7 @@ class WeatherFragment : Fragment(), MultiplePermissionsListener {
 
     // endregion
 
-    // region Progress animation
+    // region Refresh spinner
 
     private fun updateProgressSpinner(refreshing: Boolean) {
         when (refreshing) {
@@ -178,7 +177,7 @@ class WeatherFragment : Fragment(), MultiplePermissionsListener {
 
     private suspend fun hideSpinner() {
 
-        // Ensure refreshing spinner shown for a min 1 sec duration.
+        // Ensure refreshing spinner shown for a min [delayMillis] duration.
         val currentTimeMillis = Date().time
         val elapsedTimeMillis = currentTimeMillis - savingStartTime
         val remainingTimeMillis = delayMillis - elapsedTimeMillis
@@ -221,21 +220,22 @@ class WeatherFragment : Fragment(), MultiplePermissionsListener {
     }
 
     private fun showSettingsDialog() = AlertDialog.Builder(requireActivity()).apply {
-        setTitle("Permissions Required")
-        setMessage("This app needs permission to use this feature. You can grant them in app settings.")
-        setPositiveButton("GOTO SETTINGS") { dialog, _ ->
+        setTitle(getString(R.string.permissions_dialog_title))
+        setMessage(getString(R.string.permissions_dialog_message))
+        setPositiveButton(getString(R.string.go_to_settings)) { dialog, _ ->
             dialog.cancel()
             openSettings()
         }
-        setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
+        setNegativeButton(getString(R.string.cancel)) { dialog, _ -> dialog.cancel() }
         show()
     }
 
-    // navigating user to app settings
+    // Navigate user to app settings.
+    private val requestCode = 101
     private fun openSettings() =
         startActivityForResult(Intent(ACTION_APPLICATION_DETAILS_SETTINGS).apply {
             data = Uri.fromParts("package", requireActivity().packageName, null)
-        }, 101)
+        }, requestCode)
 
 
     override fun onPermissionRationaleShouldBeShown(

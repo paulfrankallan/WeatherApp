@@ -40,4 +40,8 @@
     <string name="no_data_image">No data image</string>
     <string name="no_data">No Data Available</string>
     <string name="no_data_message">Check your internet connection &amp; location services and try again</string>
+    <string name="permissions_dialog_title">Permissions Required</string>
+    <string name="cancel">Cancel</string>
+    <string name="go_to_settings">Go to settings?</string>
+    <string name="permissions_dialog_message">This app needs location permissions. You can grant them in app settings.</string>
 </resources>

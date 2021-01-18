@@ -6,6 +6,7 @@ import android.location.Location
 import androidx.lifecycle.LiveData
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 
@@ -21,13 +22,20 @@ open class LocationClientLiveData(context: Context) : LiveData<Location?>() {
     @SuppressLint("MissingPermission")
     override fun onActive() {
         super.onActive()
+
+        startLocationUpdates()
+
+        fusedLocationClient.getCurrentLocation(PRIORITY_HIGH_ACCURACY, null)
+            .addOnSuccessListener {
+                setLocationData(it)
+            }
+
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location: Location? ->
                 location.also {
                     setLocationData(it)
                 }
             }
-        startLocationUpdates()
     }
 
     @SuppressLint("MissingPermission")
@@ -56,7 +64,7 @@ open class LocationClientLiveData(context: Context) : LiveData<Location?>() {
         val locationRequest: LocationRequest = LocationRequest.create().apply {
             interval = 10000
             fastestInterval = 5000
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            priority = PRIORITY_HIGH_ACCURACY
         }
     }
 }

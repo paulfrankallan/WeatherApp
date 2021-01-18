@@ -4,7 +4,7 @@ import android.location.Location
 import androidx.lifecycle.*
 import com.demo.weatherapp.R
 import com.demo.weatherapp.app.degreesToHeadingString
-import com.demo.weatherapp.app.framework.ResourceProvider
+import com.demo.weatherapp.app.framework.DefaultResourceProvider
 import com.demo.weatherapp.app.location.LocationClientLiveData
 import com.demo.weatherapp.app.utcTimeStampToLocalDateTime
 import com.demo.weatherapp.data.model.Result
@@ -27,7 +27,7 @@ class WeatherViewModel : ViewModel(), KoinComponent {
     val location: LocationClientLiveData by inject()
     private val actions = MutableLiveData<Action>()
     private val weatherRepository: WeatherAppRepository by inject()
-    private val resourceProvider: ResourceProvider by inject()
+    private val resourceProvider: DefaultResourceProvider by inject()
     private val repositoryObserver = MutableLiveData<Result<WeatherData>>()
 
     // endregion

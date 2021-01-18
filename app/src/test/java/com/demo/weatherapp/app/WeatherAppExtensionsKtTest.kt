@@ -211,8 +211,6 @@ class WeatherAppExtensionsKtTest {
 
         // Assert utc timestamp converted back to LocalDateTime as expected
         assertEquals(localDateTimeNow, epochSecond.utcTimeStampToLocalDateTime())
-
-        println(localDateTimeNow)
     }
 
     // endregion
