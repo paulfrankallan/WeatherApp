@@ -1,7 +1,9 @@
 
 # WeatherApp
 
-**WeatherApp 1.0 Release Notes** 
+**WeatherApp 1.0 Release Notes 18/01/21** 
+
+ - Initial WeatherApp release 
 
 **Important!**
 
