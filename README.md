@@ -3,6 +3,12 @@
 
 **WeatherApp 1.0 Release Notes** 
 
+**Important!**
+
+To build the app you will need to add an openweathermap.org API key to your gradle.properties file which is outside of the project (e.g. /Users/[user_dir]/.gradle/gradle.properties) on mac. Add a line to the gradle.properties as follows:
+
+weather_api_key = "[your openweathermap api key]"
+
 **Assumptions**
 
  - Main weather only - screenshot doesn’t show description.
