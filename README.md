@@ -26,6 +26,8 @@ weather_api_key = "[your openweathermap api key]"
 
 **Architecture:**
 
+Moved from Kotlin Android Extensions (Synthetics) to Jetpack View Binding as Kotlin Android Extensions is deprecated!
+
 MVVM/MVI Architecture 
   - Enough to demonstrate a production quality app focusing on stability, extendability and testability.
 
