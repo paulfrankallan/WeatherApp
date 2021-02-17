@@ -13,8 +13,8 @@ import com.demo.weatherapp.data.network.NoConnectionError
 import com.demo.weatherapp.data.repository.WeatherAppRepository
 import com.demo.weatherapp.feature.weather.WeatherState.Action
 import com.demo.weatherapp.feature.weather.WeatherState.Event
-import org.koin.core.KoinComponent
-import org.koin.core.inject
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
 import org.threeten.bp.format.FormatStyle
