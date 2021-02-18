@@ -4,13 +4,12 @@ import android.content.Context
 import android.net.ConnectivityManager
 import okhttp3.Interceptor
 import okhttp3.Response
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import java.io.IOException
+import javax.inject.Inject
 
-class NoConnectionInterceptor : Interceptor, KoinComponent {
+class NoConnectionInterceptor : Interceptor {
 
-  private val context: Context by inject()
+  @Inject lateinit var  context: Context
 
   @Throws(IOException::class)
   override fun intercept(chain: Interceptor.Chain): Response {

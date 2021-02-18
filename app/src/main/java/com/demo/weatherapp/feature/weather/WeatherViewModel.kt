@@ -13,21 +13,22 @@ import com.demo.weatherapp.data.network.NoConnectionError
 import com.demo.weatherapp.data.repository.WeatherAppRepository
 import com.demo.weatherapp.feature.weather.WeatherState.Action
 import com.demo.weatherapp.feature.weather.WeatherState.Event
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
+import dagger.hilt.android.lifecycle.HiltViewModel
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
 import org.threeten.bp.format.FormatStyle
+import javax.inject.Inject
 import kotlin.math.roundToInt
 
-class WeatherViewModel : ViewModel(), KoinComponent {
+@HiltViewModel
+class WeatherViewModel @Inject constructor(): ViewModel() {
 
     // region Members
 
-    val location: LocationClientLiveData by inject()
+    @Inject lateinit var location: LocationClientLiveData
+    @Inject lateinit var weatherRepository: WeatherAppRepository
+    @Inject lateinit var resourceProvider: DefaultResourceProvider
     private val actions = MutableLiveData<Action>()
-    private val weatherRepository: WeatherAppRepository by inject()
-    private val resourceProvider: DefaultResourceProvider by inject()
     private val repositoryObserver = MutableLiveData<Result<WeatherData>>()
 
     // endregion

@@ -25,10 +25,6 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.setMain
 import org.junit.*
-import org.koin.core.KoinComponent
-import org.koin.core.context.startKoin
-import org.koin.core.context.stopKoin
-import org.koin.dsl.module
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.ZoneId
 import org.threeten.bp.ZoneOffset
@@ -38,7 +34,7 @@ import retrofit2.Response
 import kotlin.math.roundToInt
 
 @ExperimentalCoroutinesApi
-class WeatherViewModelTest: KoinComponent {
+class WeatherViewModelTest {
 
     // region Setup
 
@@ -58,13 +54,6 @@ class WeatherViewModelTest: KoinComponent {
     private val resourceProvider: DefaultResourceProvider = mock()
     private val locationClientLiveData: LocationClientLiveData = mock()
 
-    private val testModule = module {
-        single { context }
-        single { weatherRepository }
-        single { resourceProvider }
-        single { locationClientLiveData }
-    }
-
     @Before
     fun setUp() {
 
@@ -72,10 +61,6 @@ class WeatherViewModelTest: KoinComponent {
 
         whenever(realm.where(WeatherData::class.java)).thenReturn(realmQuery)
         whenever(realmQuery.findFirst()).thenReturn(WeatherData(name = "BOOM"))
-
-        startKoin {
-            modules(testModule)
-        }
 
         weatherRepository = WeatherAppRepository(
             realm = realm,
@@ -98,7 +83,6 @@ class WeatherViewModelTest: KoinComponent {
 
     @After
     fun tearDown() {
-        stopKoin()
         Dispatchers.resetMain()
         testCoroutineDispatcher.cleanupTestCoroutines()
     }
