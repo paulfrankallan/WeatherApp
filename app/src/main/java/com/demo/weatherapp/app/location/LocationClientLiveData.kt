@@ -9,9 +9,12 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
-open class LocationClientLiveData @Inject constructor(context: Context) : LiveData<Location?>() {
+open class LocationClientLiveData @Inject constructor(
+    @ApplicationContext context: Context
+) : LiveData<Location?>() {
 
     private var fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 

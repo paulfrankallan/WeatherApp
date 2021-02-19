@@ -16,9 +16,9 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 open class WeatherAppRepository @Inject constructor(
-    private val realm: Realm = Realm.getDefaultInstance(),
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    private val weatherAppApi: WeatherAppApi
+    var realm: Realm = Realm.getDefaultInstance(),
+    var ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    var weatherAppApi: WeatherAppApi
 ) : WeatherAppRepositoryApi {
 
     // region Sync weather
@@ -27,45 +27,47 @@ open class WeatherAppRepository @Inject constructor(
         repositoryObserver: MutableLiveData<Result<WeatherData>>,
         location: Location?
     ) {
+        withContext(ioDispatcher) {
 
-        // Show local data < 24 hours old right away while network call made
-        getLocal()?.let { localData ->
-            val lastUpdated = localData.dt?.utcTimeStampToLocalDateTime()
-            lastUpdated?.wasLessThan24HrsAgo()?.let { dateGood ->
-                if (dateGood) {
-                    repositoryObserver.value = Result.Success(localData)
+            // Show local data < 24 hours old right away while network call made
+            getLocal()?.let { localData ->
+                val lastUpdated = localData.dt?.utcTimeStampToLocalDateTime()
+                lastUpdated?.wasLessThan24HrsAgo()?.let { dateGood ->
+                    if (dateGood) {
+                        repositoryObserver.value = Result.Success(localData)
+                    }
                 }
             }
-        }
 
-        // We have no location info so don't make the network call
-        if(location == null) return
+            // We have no location info so don't make the network call
+            if (location == null) return@withContext
 
-        when (val result = getRemoteWeatherData(repositoryObserver, location)) {
-            is Result.Success -> {
-                deleteAll()
-                save(result.data)
-                repositoryObserver.value = result
-            }
-            is Result.Error -> {
-                // IF offline & local data < 24 hours old THEN return data, location & updated
-                // ELSE IF offline data doesn't exist or out-of-date THEN return error with no data
-                // Note pass through any error to be handled not just no network connection
-                getLocal()?.let { localData ->
-                    val lastUpdated = localData.dt?.utcTimeStampToLocalDateTime()
-                    lastUpdated?.wasLessThan24HrsAgo()?.let { dateGood ->
-                        if (dateGood) {
-                            // Error but we have good data, return error and data
-                            repositoryObserver.value = Result.Error(result.exception, localData)
-                        } else {
-                            // Data out-of-date, return error
+            when (val result = getRemoteWeatherData(repositoryObserver, location)) {
+                is Result.Success -> {
+                    deleteAll()
+                    save(result.data)
+                    repositoryObserver.value = result
+                }
+                is Result.Error -> {
+                    // IF offline & local data < 24 hours old THEN return data, location & updated
+                    // ELSE IF offline data doesn't exist or out-of-date THEN return error with no data
+                    // Note pass through any error to be handled not just no network connection
+                    getLocal()?.let { localData ->
+                        val lastUpdated = localData.dt?.utcTimeStampToLocalDateTime()
+                        lastUpdated?.wasLessThan24HrsAgo()?.let { dateGood ->
+                            if (dateGood) {
+                                // Error but we have good data, return error and data
+                                repositoryObserver.value = Result.Error(result.exception, localData)
+                            } else {
+                                // Data out-of-date, return error
+                                repositoryObserver.value = Result.Error(result.exception)
+                            }
+                        } ?: run { // Can't resolve date, return error
                             repositoryObserver.value = Result.Error(result.exception)
                         }
-                    } ?: run { // Can't resolve date, return error
+                    } ?: run { // No weather data, return error
                         repositoryObserver.value = Result.Error(result.exception)
                     }
-                } ?: run { // No weather data, return error
-                    repositoryObserver.value = Result.Error(result.exception)
                 }
             }
         }
@@ -78,9 +80,9 @@ open class WeatherAppRepository @Inject constructor(
     private suspend fun getRemoteWeatherData(
         repositoryObserver: MutableLiveData<Result<WeatherData>>,
         location: Location
-    ): Result<WeatherData> =
-        withContext(ioDispatcher) {
-            return@withContext try {
+    ): Result<WeatherData> {
+//        withContext(ioDispatcher) {
+            return try {
                 repositoryObserver.postValue(Result.Refreshing(true))
                 val result = weatherAppApi.getWeather(
                     lat = location.latitude,
