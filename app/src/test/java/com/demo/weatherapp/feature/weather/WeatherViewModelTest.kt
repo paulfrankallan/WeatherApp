@@ -6,6 +6,7 @@ import androidx.lifecycle.Observer
 import com.demo.weatherapp.R
 import com.demo.weatherapp.app.degreesToHeadingString
 import com.demo.weatherapp.app.framework.DefaultResourceProvider
+import com.demo.weatherapp.app.framework.RealmFactory
 import com.demo.weatherapp.app.location.LocationClientLiveData
 import com.demo.weatherapp.app.utcTimeStampToLocalDateTime
 import com.demo.weatherapp.data.model.MainDAO
@@ -15,6 +16,7 @@ import com.demo.weatherapp.data.model.WindDAO
 import com.demo.weatherapp.data.network.WeatherAppApi
 import com.demo.weatherapp.data.repository.WeatherAppRepository
 import com.nhaarman.mockitokotlin2.*
+import dagger.hilt.android.testing.HiltAndroidRule
 import io.realm.Realm
 import io.realm.RealmList
 import io.realm.RealmQuery
@@ -31,6 +33,7 @@ import org.threeten.bp.ZoneOffset
 import org.threeten.bp.format.DateTimeFormatter
 import org.threeten.bp.format.FormatStyle
 import retrofit2.Response
+import javax.inject.Inject
 import kotlin.math.roundToInt
 
 @ExperimentalCoroutinesApi
@@ -46,24 +49,24 @@ class WeatherViewModelTest {
     private val testCoroutineDispatcher = TestCoroutineDispatcher()
 
     private var realm: Realm = mock()
+    private var realmFactory: RealmFactory = mock()
     private var realmQuery: RealmQuery<WeatherDataDAO> = mock()
     private var weatherAppApi: WeatherAppApi = mock()
     private var weatherObserver: Observer<WeatherState> = mock()
-    private val context: Context = mock()
     private lateinit var weatherRepository: WeatherAppRepository
     private val resourceProvider: DefaultResourceProvider = mock()
-    private val locationClientLiveData: LocationClientLiveData = mock()
 
     @Before
     fun setUp() {
 
         Dispatchers.setMain(testCoroutineDispatcher)
 
+        whenever(realmFactory.getRealm()).thenReturn(realm)
         whenever(realm.where(WeatherDataDAO::class.java)).thenReturn(realmQuery)
         whenever(realmQuery.findFirst()).thenReturn(WeatherDataDAO(name = "BOOM"))
 
         weatherRepository = WeatherAppRepository(
-            realm = realm,
+            realmFactory = realmFactory,
             ioDispatcher = testCoroutineDispatcher,
             weatherAppApi = weatherAppApi
         )
@@ -79,6 +82,8 @@ class WeatherViewModelTest {
         ).thenReturn(generalErrorMessage)
 
         weatherViewModel = WeatherViewModel()
+        weatherViewModel.weatherRepository = weatherRepository
+        weatherViewModel.resourceProvider = resourceProvider
     }
 
     @After
@@ -123,7 +128,7 @@ class WeatherViewModelTest {
 
         val weatherData = WeatherDataDAO(
             name = locationName,
-            weatherDAO = RealmList(WeatherDAO(main = currentCondition, icon = icon)),
+            weather = RealmList(WeatherDAO(main = currentCondition, icon = icon)),
             wind = WindDAO(speed = windSpeed, deg = windDirection),
             main = MainDAO(temp = temperature),
             dt = epochSecond
@@ -211,7 +216,7 @@ class WeatherViewModelTest {
             Assert.assertEquals(successWeatherDataState.location, locationName)
             Assert.assertEquals(successWeatherDataState.currentCondition, currentCondition)
             Assert.assertEquals(successWeatherDataState.icon, icon)
-            Assert.assertEquals(successWeatherDataState.temperature, temperature.toString())
+            Assert.assertEquals(successWeatherDataState.temperature, (temperature).toString())
             Assert.assertEquals(successWeatherDataState.windSpeed, windSpeed.toString())
             Assert.assertEquals(successWeatherDataState.windDirection,  windDirection.degreesToHeadingString())
             Assert.assertEquals(successWeatherDataState.updated, timeStamp)

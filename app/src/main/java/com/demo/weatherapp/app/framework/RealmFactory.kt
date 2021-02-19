@@ -2,7 +2,7 @@ package com.demo.weatherapp.app.framework
 
 import io.realm.Realm
 
-class RealmFactory {
+open class RealmFactory {
 
-    fun getRealm(): Realm = Realm.getDefaultInstance()
+    open fun getRealm(): Realm = Realm.getDefaultInstance()
 }
