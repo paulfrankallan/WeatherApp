@@ -8,10 +8,10 @@ import com.demo.weatherapp.app.degreesToHeadingString
 import com.demo.weatherapp.app.framework.DefaultResourceProvider
 import com.demo.weatherapp.app.location.LocationClientLiveData
 import com.demo.weatherapp.app.utcTimeStampToLocalDateTime
-import com.demo.weatherapp.data.model.Main
-import com.demo.weatherapp.data.model.Weather
-import com.demo.weatherapp.data.model.WeatherData
-import com.demo.weatherapp.data.model.Wind
+import com.demo.weatherapp.data.model.MainDAO
+import com.demo.weatherapp.data.model.WeatherDAO
+import com.demo.weatherapp.data.model.WeatherDataDAO
+import com.demo.weatherapp.data.model.WindDAO
 import com.demo.weatherapp.data.network.WeatherAppApi
 import com.demo.weatherapp.data.repository.WeatherAppRepository
 import com.nhaarman.mockitokotlin2.*
@@ -46,7 +46,7 @@ class WeatherViewModelTest {
     private val testCoroutineDispatcher = TestCoroutineDispatcher()
 
     private var realm: Realm = mock()
-    private var realmQuery: RealmQuery<WeatherData> = mock()
+    private var realmQuery: RealmQuery<WeatherDataDAO> = mock()
     private var weatherAppApi: WeatherAppApi = mock()
     private var weatherObserver: Observer<WeatherState> = mock()
     private val context: Context = mock()
@@ -59,8 +59,8 @@ class WeatherViewModelTest {
 
         Dispatchers.setMain(testCoroutineDispatcher)
 
-        whenever(realm.where(WeatherData::class.java)).thenReturn(realmQuery)
-        whenever(realmQuery.findFirst()).thenReturn(WeatherData(name = "BOOM"))
+        whenever(realm.where(WeatherDataDAO::class.java)).thenReturn(realmQuery)
+        whenever(realmQuery.findFirst()).thenReturn(WeatherDataDAO(name = "BOOM"))
 
         weatherRepository = WeatherAppRepository(
             realm = realm,
@@ -121,11 +121,11 @@ class WeatherViewModelTest {
             .getResource(R.string.last_updated, timeStamp))
             .thenReturn(timeStamp.toString())
 
-        val weatherData = WeatherData(
+        val weatherData = WeatherDataDAO(
             name = locationName,
-            weather = RealmList(Weather(main = currentCondition, icon = icon)),
-            wind = Wind(speed = windSpeed, deg = windDirection),
-            main = Main(temp = temperature),
+            weatherDAO = RealmList(WeatherDAO(main = currentCondition, icon = icon)),
+            wind = WindDAO(speed = windSpeed, deg = windDirection),
+            main = MainDAO(temp = temperature),
             dt = epochSecond
         )
 

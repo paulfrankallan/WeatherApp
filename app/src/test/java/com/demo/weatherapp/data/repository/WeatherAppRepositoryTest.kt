@@ -33,17 +33,17 @@ class WeatherAppRepositoryTest {
 
     // Mocks
     private var realm: Realm = mock()
-    private var realmQuery: RealmQuery<WeatherData> = mock()
+    private var realmQuery: RealmQuery<WeatherDataDAO> = mock()
     private var weatherAppApi: WeatherAppApi = mock()
-    private var weatherStateObserver: Observer<Result<WeatherData>> = mock()
+    private var weatherDataStateObserver: Observer<Result<WeatherDataDAO>> = mock()
 
     @Before
     fun setUp() {
 
         Dispatchers.setMain(testCoroutineDispatcher)
 
-        whenever(realm.where(WeatherData::class.java)).thenReturn(realmQuery)
-        whenever(realmQuery.findFirst()).thenReturn(WeatherData(name = "BOOM"))
+        whenever(realm.where(WeatherDataDAO::class.java)).thenReturn(realmQuery)
+        whenever(realmQuery.findFirst()).thenReturn(WeatherDataDAO(name = "BOOM"))
 
         weatherRepository = WeatherAppRepository(
             realm = realm,
@@ -75,11 +75,11 @@ class WeatherAppRepositoryTest {
         val timeStamp = 123456789L
         val icon = "sunny.png"
 
-        val weatherData = WeatherData(
+        val weatherData = WeatherDataDAO(
             name = locationName,
-            weather = RealmList(Weather(main = currentCondition, icon = icon)),
-            wind = Wind(speed = windSpeed, deg = windDirection),
-            main = Main(temp = temperature),
+            weatherDAO = RealmList(WeatherDAO(main = currentCondition, icon = icon)),
+            wind = WindDAO(speed = windSpeed, deg = windDirection),
+            main = MainDAO(temp = temperature),
             dt = timeStamp
         )
 
@@ -95,9 +95,9 @@ class WeatherAppRepositoryTest {
         }
 
         val location: Location = mock()
-        val repositoryObserver = MutableLiveData<Result<WeatherData>>()
+        val repositoryObserver = MutableLiveData<Result<WeatherDataDAO>>()
 
-        repositoryObserver.observeForever(weatherStateObserver)
+        repositoryObserver.observeForever(weatherDataStateObserver)
 
         // when
 
@@ -106,9 +106,9 @@ class WeatherAppRepositoryTest {
         // Then
 
         // Verify weatherStateObserver interactions
-        argumentCaptor<Result<WeatherData>>().run {
+        argumentCaptor<Result<WeatherDataDAO>>().run {
 
-            verify(weatherStateObserver, times(3)).onChanged(capture())
+            verify(weatherDataStateObserver, times(3)).onChanged(capture())
 
             val result1 = firstValue as Result.Refreshing
             val result2 = secondValue as Result.Refreshing
@@ -121,8 +121,8 @@ class WeatherAppRepositoryTest {
 
             // Check all weather values
             Assert.assertEquals(result3.data.name, locationName)
-            Assert.assertEquals(result3.data.weather?.get(0)?.main, currentCondition)
-            Assert.assertEquals(result3.data.weather?.get(0)?.icon, icon)
+            Assert.assertEquals(result3.data.weatherDAO?.get(0)?.main, currentCondition)
+            Assert.assertEquals(result3.data.weatherDAO?.get(0)?.icon, icon)
             Assert.assertEquals(result3.data.main?.temp, temperature)
             Assert.assertEquals(result3.data.wind?.speed, windSpeed)
             Assert.assertEquals(result3.data.wind?.deg, windDirection)
@@ -130,7 +130,7 @@ class WeatherAppRepositoryTest {
         }
 
         // Verify no further interactions with weatherStateObserver
-        verifyNoMoreInteractions(weatherStateObserver)
+        verifyNoMoreInteractions(weatherDataStateObserver)
     }
 
     // endregion

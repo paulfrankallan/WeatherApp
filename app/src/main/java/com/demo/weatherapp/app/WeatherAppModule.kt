@@ -2,15 +2,14 @@ package com.demo.weatherapp.app
 
 import android.content.Context
 import com.demo.weatherapp.app.framework.DefaultResourceProvider
+import com.demo.weatherapp.app.framework.RealmFactory
 import com.demo.weatherapp.app.framework.ResourceProvider
 import com.demo.weatherapp.data.network.WeatherAppClient
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.realm.Realm
 import kotlinx.coroutines.Dispatchers
 
 @InstallIn(ViewModelComponent::class)
@@ -23,7 +22,7 @@ class WeatherAppModule {
     ): DefaultResourceProvider = ResourceProvider(context)
 
     @Provides
-    fun providesRealm(): Realm = Realm.getDefaultInstance()
+    fun providesRealmFactory() = RealmFactory()
 
     @Provides
     fun providesDispatcher() = Dispatchers.IO

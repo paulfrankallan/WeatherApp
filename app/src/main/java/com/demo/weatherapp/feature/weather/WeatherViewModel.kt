@@ -84,11 +84,11 @@ class WeatherViewModel @Inject constructor(): ViewModel() {
         val weather = weatherData?.let {
             weather.value?.copy(
                 location = formatLocation(weatherData),
-                currentCondition = weatherData.weather?.get(0)?.main ?: "",
+                currentCondition = weatherData.weather?.elementAt(0)?.main ?: "",
                 temperature = formatTemperature(weatherData),
                 windSpeed = formatWindSpeed(weatherData),
                 windDirection = weatherData.wind?.deg.degreesToHeadingString(),
-                icon = weatherData.weather?.get(0)?.icon ?: "",
+                icon = weatherData.weather?.elementAt(0)?.icon ?: "",
                 updated = formatUpdated(weatherData),
                 noData = false
             )

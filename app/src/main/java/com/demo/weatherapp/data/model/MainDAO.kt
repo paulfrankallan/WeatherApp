@@ -1,5 +1,7 @@
 package com.demo.weatherapp.data.model
 
-data class Main(
+import io.realm.RealmObject
+
+open class MainDAO(
     var temp: Float? = null
-)
+): RealmObject()

@@ -3,10 +3,10 @@ package com.demo.weatherapp.data.repository
 import android.location.Location
 import androidx.lifecycle.MutableLiveData
 import com.demo.weatherapp.BuildConfig
+import com.demo.weatherapp.app.framework.RealmFactory
 import com.demo.weatherapp.app.utcTimeStampToLocalDateTime
 import com.demo.weatherapp.app.wasLessThan24HrsAgo
-import com.demo.weatherapp.data.model.Result
-import com.demo.weatherapp.data.model.WeatherData
+import com.demo.weatherapp.data.model.*
 import com.demo.weatherapp.data.network.WeatherAppApi
 import io.realm.Realm
 import io.realm.RealmObject
@@ -16,7 +16,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 open class WeatherAppRepository @Inject constructor(
-    var realm: Realm = Realm.getDefaultInstance(),
+    var realmFactory: RealmFactory,
     var ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     var weatherAppApi: WeatherAppApi
 ) : WeatherAppRepositoryApi {
@@ -29,44 +29,66 @@ open class WeatherAppRepository @Inject constructor(
     ) {
         withContext(ioDispatcher) {
 
-            // Show local data < 24 hours old right away while network call made
-            getLocal()?.let { localData ->
-                val lastUpdated = localData.dt?.utcTimeStampToLocalDateTime()
-                lastUpdated?.wasLessThan24HrsAgo()?.let { dateGood ->
-                    if (dateGood) {
-                        repositoryObserver.value = Result.Success(localData)
+            realmFactory.getRealm().use { realm ->
+
+                // Show local data < 24 hours old right away while network call made
+                realm.getLocal()?.toWeatherData()?.let { localData ->
+                    val lastUpdated = localData.dt?.utcTimeStampToLocalDateTime()
+                    lastUpdated?.wasLessThan24HrsAgo()?.let { dateGood ->
+                        if (dateGood) {
+                            repositoryObserver.postValue(Result.Success(localData))
+                        }
                     }
                 }
-            }
 
-            // We have no location info so don't make the network call
-            if (location == null) return@withContext
+                // We have no location info so don't make the network call
+                if (location == null) return@withContext
 
-            when (val result = getRemoteWeatherData(repositoryObserver, location)) {
-                is Result.Success -> {
-                    deleteAll()
-                    save(result.data)
-                    repositoryObserver.value = result
-                }
-                is Result.Error -> {
-                    // IF offline & local data < 24 hours old THEN return data, location & updated
-                    // ELSE IF offline data doesn't exist or out-of-date THEN return error with no data
-                    // Note pass through any error to be handled not just no network connection
-                    getLocal()?.let { localData ->
-                        val lastUpdated = localData.dt?.utcTimeStampToLocalDateTime()
-                        lastUpdated?.wasLessThan24HrsAgo()?.let { dateGood ->
-                            if (dateGood) {
-                                // Error but we have good data, return error and data
-                                repositoryObserver.value = Result.Error(result.exception, localData)
-                            } else {
-                                // Data out-of-date, return error
-                                repositoryObserver.value = Result.Error(result.exception)
+                when (val result = getRemoteWeatherData(repositoryObserver, location)) {
+                    is Result.Success -> {
+
+                        realm.executeTransaction{ it.deleteAll() }
+
+                        val temp = WeatherDataDAO(
+                            name = result.data.name,
+                            wind = WindDAO(speed = result.data.wind?.speed, deg = result.data.wind?.deg),
+                            main = MainDAO(temp = result.data.main?.temp),
+                            dt = result.data.dt,
+                        )
+
+                        result.data.weather?.let { temp.weather.addAll(it.map {
+                            WeatherDAO(main = it.main, icon = it.icon)
+                        }) }
+
+                        realm.save(temp)
+
+                        repositoryObserver.postValue(result)
+                    }
+                    is Result.Error -> {
+                        // IF offline & local data < 24 hours old THEN return data, location & updated
+                        // ELSE IF offline data doesn't exist or out-of-date THEN return error with no data
+                        // Note pass through any error to be handled not just no network connection
+                        realm.getLocal()?.let { localData ->
+                            val lastUpdated = localData.dt?.utcTimeStampToLocalDateTime()
+                            lastUpdated?.wasLessThan24HrsAgo()?.let { dateGood ->
+                                if (dateGood) {
+                                    // Error but we have good data, return error and data
+                                    repositoryObserver.postValue(
+                                        Result.Error(
+                                            result.exception,
+                                            localData.toWeatherData()
+                                        )
+                                    )
+                                } else {
+                                    // Data out-of-date, return error
+                                    repositoryObserver.postValue(Result.Error(result.exception))
+                                }
+                            } ?: run { // Can't resolve date, return error
+                                repositoryObserver.postValue(Result.Error(result.exception))
                             }
-                        } ?: run { // Can't resolve date, return error
-                            repositoryObserver.value = Result.Error(result.exception)
+                        } ?: run { // No weather data, return error
+                            repositoryObserver.postValue(Result.Error(result.exception))
                         }
-                    } ?: run { // No weather data, return error
-                        repositoryObserver.value = Result.Error(result.exception)
                     }
                 }
             }
@@ -81,7 +103,6 @@ open class WeatherAppRepository @Inject constructor(
         repositoryObserver: MutableLiveData<Result<WeatherData>>,
         location: Location
     ): Result<WeatherData> {
-//        withContext(ioDispatcher) {
             return try {
                 repositoryObserver.postValue(Result.Refreshing(true))
                 val result = weatherAppApi.getWeather(
@@ -93,7 +114,7 @@ open class WeatherAppRepository @Inject constructor(
                 if (result.isSuccessful) {
                     result.body()?.let {
                         repositoryObserver.postValue(Result.Refreshing(false))
-                        Result.Success(it)
+                        Result.Success(it.toWeatherData())
                     } ?: Result.Error(Exception())
                 } else {
                     repositoryObserver.postValue(Result.Refreshing(false))
@@ -109,11 +130,9 @@ open class WeatherAppRepository @Inject constructor(
 
     // region Local data operations
 
-    private fun save(obj: RealmObject) = realm.executeTransaction { it.insertOrUpdate(obj) }
+    private fun Realm.save(obj: RealmObject) = executeTransaction { it.insertOrUpdate(obj) }
 
-    private fun getLocal() = realm.where(WeatherData::class.java).findFirst()
-
-    private fun deleteAll() = realm.executeTransaction { it.deleteAll() }
+    private fun Realm.getLocal() = where(WeatherDataDAO::class.java).findFirst()
 
     // endregion
 }
